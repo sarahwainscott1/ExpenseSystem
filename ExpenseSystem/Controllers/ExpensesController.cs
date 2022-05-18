@@ -164,7 +164,11 @@ namespace ExpenseSystem.Controllers
             {
                 return NotFound();
             }
-
+            var employee = _context.Employees.SingleOrDefault(x => x.Id == expense.EmployeeId);
+            if (employee == null) { throw new Exception("Employee not found"); }
+            if (expense.Status == approve) {
+                employee.ExpensesDue -= expense.Total;
+            }
             _context.Expenses.Remove(expense);
             await _context.SaveChangesAsync();
 

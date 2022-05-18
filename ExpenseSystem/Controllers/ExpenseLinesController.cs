@@ -17,6 +17,7 @@ namespace ExpenseSystem.Controllers
         private const string approve = "Approved";
         private const string reject = "Rejected";
         private const string review = "Under Review";
+        private const string modified = "Modified";
        
        
         public ExpenseLinesController(AppDbContext context)
@@ -31,14 +32,21 @@ namespace ExpenseSystem.Controllers
             var employee = _context.Employees.SingleOrDefault(x => x.Id == expense.EmployeeId);
             if (employee == null) { throw new Exception("No employee found"); }
             if (expense == null) { throw new Exception($"No order number {expenseId}"); }
-            if (expense.Status == approve) { employee.ExpensesDue -= expense.Total; } //if approved, sub total from exdue
+            if (expense.Status == approve) { 
+                employee.ExpensesDue -= expense.Total;
+                expense.Status = modified;
+            }
+            if (expense.Status == reject) {
+                expense.Status = review;
+            }
+            //if approved, sub total from exdue
             expense.Total = (from el in _context.ExpenseLines 
                              join i in _context.Items on el.ItemId equals i.Id
                              where el.ExpenseId == expenseId
                              select new {LineTotal = el.Quantity * i.Price} ).Sum(x => x.LineTotal);
 
             //change expense status to review
-            expense.Status = review;
+            
             await _context.SaveChangesAsync();
             return Ok();
         }
