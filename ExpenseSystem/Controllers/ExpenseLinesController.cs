@@ -25,7 +25,7 @@ namespace ExpenseSystem.Controllers
             if (expense == null) { throw new Exception($"No order number {expenseId}"); }
             expense.Total = (from el in _context.ExpenseLines 
                              join i in _context.Items on el.ItemId equals i.Id
-                             where el. == expenseId
+                             where el.ExpenseId == expenseId
                              select new {LineTotal = el.Quantity * i.Price} ).Sum(x => x.LineTotal);
             await _context.SaveChangesAsync();
             return Ok();

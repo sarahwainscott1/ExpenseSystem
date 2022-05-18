@@ -57,6 +57,7 @@ namespace ExpenseSystem.Controllers
         //return approved
         [HttpGet("approved")] 
         public async Task<ActionResult<IEnumerable<Expense>>> GetApproved() {
+
             return await _context.Expenses.Where(x => x.Status == approve).ToListAsync();
         }
         // PUT: api/Expenses/5

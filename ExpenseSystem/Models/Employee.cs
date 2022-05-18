@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExpenseSystem.Models {
     [Index(nameof(Email), IsUnique = true)]
@@ -14,6 +15,6 @@ namespace ExpenseSystem.Models {
         public string Password { get; set; } =String.Empty;
         public bool Admin { get; set; }
 
-
+      
     }
 }
