@@ -14,19 +14,31 @@ namespace ExpenseSystem.Controllers
     public class ExpenseLinesController : ControllerBase
     {
         private readonly AppDbContext _context;
-
+        private const string approve = "Approved";
+        private const string reject = "Rejected";
+        private const string review = "Under Review";
+       
+       
         public ExpenseLinesController(AppDbContext context)
         {
             _context = context;
         }
         //Calculate total
+     
         private async Task<IActionResult> CalculateTotal(int expenseId) {
-            var expense = await _context.Expenses.FindAsync(expenseId);
+            var expense = await _context.Expenses.SingleOrDefaultAsync(x => x.Id == expenseId);
+            if (expense == null) { throw new Exception("No expense found"); }
+            var employee = _context.Employees.SingleOrDefault(x => x.Id == expense.EmployeeId);
+            if (employee == null) { throw new Exception("No employee found"); }
             if (expense == null) { throw new Exception($"No order number {expenseId}"); }
+            if (expense.Status == approve) { employee.ExpensesDue -= expense.Total; } //if approved, sub total from exdue
             expense.Total = (from el in _context.ExpenseLines 
                              join i in _context.Items on el.ItemId equals i.Id
                              where el.ExpenseId == expenseId
                              select new {LineTotal = el.Quantity * i.Price} ).Sum(x => x.LineTotal);
+
+            //change expense status to review
+            expense.Status = review;
             await _context.SaveChangesAsync();
             return Ok();
         }
@@ -65,6 +77,7 @@ namespace ExpenseSystem.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutExpenseLine(int id, ExpenseLine expenseLine)
         {
+            
             if (id != expenseLine.Id)
             {
                 return BadRequest();
@@ -74,6 +87,7 @@ namespace ExpenseSystem.Controllers
 
             try
             {
+                
                 await _context.SaveChangesAsync();
                 await CalculateTotal(expenseLine.ExpenseId);
             }
